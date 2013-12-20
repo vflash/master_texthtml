@@ -27,68 +27,46 @@ var new_master = new function() {
 				//arguments[1] = u; //нет смысла сбрасывать в undf если его не будут брать в расчет
 			};
 
-			if (typeof nn === 'string') { // если строка, то требуется создать новый обьект
-				if (hash_elements[nn]) {
-					nn = {nodeType: 1, nodeName: nn, parentNode: false};
-				} 
-				else if (nn.length > 5 && nn[4] === ':' && nn[0] === 't' && nn[1] === 'm' && nn[2] === 'p' && nn[3] === 'l') { // по тестам вроде есть прирост
-				// else if (nn.indexOf('tmpl:') === 0) {
-					c = tmpl[nn.substring(5)];
-					if (typeof c === 'function') {
-						if (!c.prototype.nodeType) c.prototype.nodeType = -1; // чтобы в шаблоне каждый рас не опредлять
-						v = new c(master, pm, false);
+			if (typeof uu !== 'string') {
+				if (typeof uu === 'function') {
+					if (!nn.prototype.nodeType) nn.prototype.nodeType = -1;
+					nn = new uu(master, params, false);
+					i = nn.nodeType;
+					is_group = i < 0;
+					if (!is_group) params = false;
 
-						if (!v.nodeType) {
-							return text('[ ups!! '+ nn +']') // ошибка в шаблоне. отобразим ее чтоб было видно
-						};
+				} else {
+					i = (nn = uu).nodeType;
+					is_group = i < 0;
+				};
 
-						is_group = v.nodeType < 0;
-						nn = v;
-						// break;
-					} else {
-						return text('[ no template '+ nn +']') // ошибка в шаблоне. отобразим ее чтоб было видно
-					};
+				if (!i) return null;
 
-				} else { 
-					// tag.className#idNode
-					// ------------------------------
+			} else {
+				if (hash_elements[uu]) {
+					nn = {nodeType: 1, nodeName: uu, parentNode: null};
 
-					if (nn.indexOf('#') !== -1) {
-						x = nn.indexOf('#');
-						i = nn.indexOf('.');
+				} else {
+					if (uu.indexOf('#') !== -1) {
+						x = uu.indexOf('#');
+						i = uu.indexOf('.');
 
 						if (css = i !== -1) {
-							nn = {nodeType: 1, nodeName: nn.substring(0, i), 'class': nn.substring(i + 1, x), id: nn.substring(x + 1), parentNode: false};
+							nn = {nodeType: 1, nodeName: uu.substring(0, i), 'class': uu.substring(i + 1, x), id: uu.substring(x + 1), parentNode: null};
 						} else {
-							nn = {nodeType: 1, nodeName: nn.substring(0, x), id: nn.substring(x + 1), parentNode: false};
+							nn = {nodeType: 1, nodeName: uu.substring(0, x), id: uu.substring(x + 1), parentNode: null};
 						};
 					} else {
 						i = nn.indexOf('.'); 
 						if (css = i !== -1) {
-							nn = {nodeType: 1, nodeName: nn.substring(0, i), 'class': nn.substring(i + 1), parentNode: false};
+							nn = {nodeType: 1, nodeName: uu.substring(0, i), 'class': uu.substring(i + 1), parentNode: null};
 						} else {
-							nn = {nodeType: 1, nodeName: nn, parentNode: false};
+							nn = {nodeType: 1, nodeName: uu, parentNode: null};
 						};
 					};
-
-
-					// можно попробовать кешировать определенные правила чтобы создавать элементы через конструктор
-					// возможно будет выигрыш при многократном создании похожих элементов. а возможно нет
-					// но если будут динамические правила то памяти не хватит
 				};
-
-			} else { // значит обьект или конструктор
-				if (typeof nn === 'function') {
-					if (!nn.prototype.nodeType) nn.prototype.nodeType = -1;
-					nn = new nn(master, pm, false);
-				};
-
-				if (!nn.nodeType) {
-					return text('[ ups!! **** ]') // ошибка в шаблоне. отобразим ее чтоб было видно
-				};
-
-				is_group = nn.nodeType < 0; // кешируем флажок что это обьект не HTMLElement
 			};
+			
 
 
 			// set params
@@ -98,6 +76,7 @@ var new_master = new function() {
 					if (nn._set_parameters === true && typeof nn.set == 'function') {
 						nn.set(pm);
 					};
+
 				} else {
 					for (x in pm) {
 						v = pm[x];
@@ -177,39 +156,30 @@ var new_master = new function() {
 		var l = m.length, a, n, u; 
 
 		while(i < l) {
-			a = m[i++];
+			a = m[i++]; if (a == null) continue;
 
-			if (!a) {
-				if (a === 0) {
-					childs.push({nodeType: 3, data: a});
-				};
+			if (typeof a !== 'object') {
+				if (a === true || a === false || a !== a) continue;
+				childs.push({nodeType: 3, data: a});
 				continue;
 			};
-
 
 			if (a.nodeType > 0) {
 				if (a.parentNode) {
 					if (n = a.parentNode.childNodes) {
-						n[n.indexOf(a)] = u;  // просто отмечу пустым. так будет быстрее
-						//n.splice(n.indexOf(a), 1);
+						n[n.indexOf(a)] = null;  // просто отмечу пустым. так будет быстрее
 					};
 				};
-
 				a.parentNode = nn; // зашита от зацикливания
 
 				childs.push(a);
-				continue;
-			};
 
-			if (a.nodeType < 0) {
+			} else if (a.nodeType < 0) {
 				if (a = a.node) {
-					// x = a.nodeType;
 					if (a.nodeType > 0) { // должен быть только элемент
 						if (a.parentNode) {
 							if (n = a.parentNode.childNodes) {
-								// у элемента может быть только один родитель
-								n[n.indexOf(a)] = u;
-								//n.splice(n.indexOf(a), 1);
+								n[n.indexOf(a)] = null; // у элемента может быть только один родитель
 							};
 						};
 
@@ -218,17 +188,9 @@ var new_master = new function() {
 						childs.push(a);
 					};
 				};
-				continue;
-			};
 
-
-			if (typeof a === 'object') {
-				if (isArray(a)) {
-					append_nativ(nn, childs, a, 0); //, a.length
-				};
-			}
-			else if (typeof a === 'string' || typeof a === 'number' ) {
-				childs.push({nodeType: 3, data: a});
+			} else if (isArray(a)) {
+				append_nativ(nn, childs, a, 0); //, a.length
 			};
 		};
 	};
@@ -364,7 +326,7 @@ var new_master = new function() {
 	function entities_re(a) {return entities_cm[a]};
 
 	function htmlEscape(v) {
-		return String(A).replace(entities_rg, entities_re); 
+		return (A+'').replace(entities_rg, entities_re); 
 	};
 
 
@@ -454,7 +416,7 @@ var objectToHTML = new function(rr) {
 					break;
 
 				default:
-					attrs += ' ' + x + '="' + String(v).replace(entities_attr, entities_re) + '"';
+					attrs += ' ' + x + '="' + (v+'').replace(entities_attr, entities_re) + '"';
 			};
 		};
 
@@ -494,7 +456,7 @@ var objectToHTML = new function(rr) {
 					continue;
 				
 				case 3: // text
-					textBuffer += String(n.data).replace(entities_text, entities_re); // /[&<>]/g
+					textBuffer += (n.data+'').replace(entities_text, entities_re); // /[&<>]/g
 					continue;
 				
 				case 42: // как есть _.write('...')
@@ -523,7 +485,7 @@ var objectToHTML = new function(rr) {
 					continue;
 				
 				case 3: // text
-					textBuffer += String(n.data).replace(entities_text, entities_re);
+					textBuffer += (n.data+'').replace(entities_text, entities_re);
 					continue;
 				
 				case 42: // как есть _.write('...')
@@ -598,15 +560,6 @@ exports.toHTML = objectToHTML; // конвектор обьектной моде
 
 // var BF = new Buffer(1024*1024*10);
 exports.render = function(nn, params) {
-
-	if (typeof nn === 'string') {
-		// if (nn.indexOf('tmpl:') === 0) {
-		if (nn[0] === 't' && nn[1] === 'm' && nn[2] === 'p' && nn[3] === 'l' && nn[4] === ':') {
-			nn = tmpl[nn.substr(5)];
-		} else {
-			return;
-		};
-	};
 
 	if (typeof nn !== 'function') {
 		return;

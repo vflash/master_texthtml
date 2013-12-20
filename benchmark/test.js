@@ -203,17 +203,16 @@ tmpl.test_table = function(_, p) {
 	
 	
 	while(x--) {
-		tx = master.render('tmpl:bench', bench_vars);
+		tx = master.render(tmpl.bench, bench_vars);
 		// tx = master.render('tmpl:bench', JSON.parse(JSON.stringify(bench_vars)) );
 
-		// tx = master.render('tmpl:jade_tiny', false);
-		// tx = master.render(tmpl.jade_tiny, false);
+		//tx = master.render(tmpl.jade_tiny, false);
 		// tx = master.render('tmpl:jade_small', false);
 		// tx = master.render('tmpl:jade_locals', { title: 'Title', links: ['Home', 'About Us', 'Store', 'FAQ', 'Contact'] });
-		// tx = master.render('tmpl:habr_big', false); // большой статический шаблон. там где много стической информации мастер не эффективен.
+		// tx = master.render(tmpl.habr_big, false); // большой статический шаблон. там где много стической информации мастер не эффективен.
 		// tx = master.render('tmpl:test_table', {table: value_for_testTable});
 		// tx = master.render('tmpl:test_page', false);
-		// tx = master.render('tmpl:test_jinja', value_for_test_jinja);
+		// tx = master.render(tmpl.test_jinja, value_for_test_jinja);
 	};
 
 	T1 = new Date() - T1; 
